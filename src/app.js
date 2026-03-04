@@ -170,7 +170,8 @@ function renderItems() {
     descriptionInput.value = item.description;
     dateInput.value = item.serviceDate || "";
     quantityInput.value = item.quantity;
-    uomInput.value = item.uom || "Hour";
+    const safeUom = ["Hour", "Visit", "Day", "Week"].includes(item.uom) ? item.uom : "Hour";
+    uomInput.value = safeUom;
     priceInput.value = item.price;
 
     descriptionInput.addEventListener("input", (event) => {
@@ -188,7 +189,7 @@ function renderItems() {
       renderPreview();
     });
 
-    uomInput.addEventListener("input", (event) => {
+    uomInput.addEventListener("change", (event) => {
       item.uom = event.target.value || "Hour";
       renderPreview();
     });
