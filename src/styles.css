@@ -145,6 +145,10 @@ hr {
   gap: 0.6rem;
 }
 
+.items-section .section-head {
+  margin-bottom: 0.8rem;
+}
+
 .items-container {
   display: flex;
   flex-direction: column;
