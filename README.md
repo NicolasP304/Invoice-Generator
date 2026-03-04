@@ -12,12 +12,14 @@ A clean, easy-to-use invoice generator built for non-technical users.
 
 ## Features
 - Business and client information sections
+- Optional logo URL and brand color picker
 - Auto-generated invoice numbers (`INV-0001`, `INV-0002`, ...)
 - Invoice and due date inputs with sensible defaults
 - Flexible line items (description, quantity, unit price)
 - Tax and discount percentages
 - Currency selection (USD, EUR, GBP, CAD, AUD)
 - Notes section for payment terms or custom messages
+- One-click example invoice for quick onboarding
 
 ## Run locally
 This project has no build step.
@@ -30,9 +32,9 @@ Tip: If you use VS Code, you can run a simple static server (e.g. Live Server) f
 
 ## Deploy to GitHub Pages
 1. Push this repository to GitHub.
-2. In repo settings, go to **Pages**.
-3. Set source to `Deploy from a branch` and choose `main` + `/ (root)`.
-4. Save. Your app will be available at your GitHub Pages URL.
+2. In repo settings, open **Pages** and set source to **GitHub Actions**.
+3. The workflow at [.github/workflows/deploy-pages.yml](/Users/niko/Desktop/Invoice-Generator/.github/workflows/deploy-pages.yml) auto-deploys on every push to `main`.
+4. Your app will be published at your GitHub Pages URL after the workflow succeeds.
 
 ## Version control workflow (recommended)
 - Keep `main` always stable.

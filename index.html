@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice Generator</title>
+    <title>Care Service Invoice Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,7 +16,7 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Simple and friendly</p>
-        <h1>Invoice Generator</h1>
+        <h1>Care Service Invoice Generator</h1>
       </div>
       <button id="new-invoice-btn" class="btn btn-secondary">Start New Invoice</button>
     </header>
@@ -28,7 +28,7 @@
         <div class="grid two-col">
           <label>
             Your Business Name
-            <input id="business-name" type="text" placeholder="Example: Mum's Cleaning Service" />
+            <input id="business-name" type="text" placeholder="Example: Mum's Elder Care Services" />
           </label>
           <label>
             Your Email
@@ -42,26 +42,62 @@
             Your Address
             <input id="business-address" type="text" placeholder="Street, City, Postcode" />
           </label>
+          <label>
+            Business Logo URL (optional)
+            <input id="logo-url" type="url" placeholder="https://example.com/logo.png" />
+          </label>
+          <label>
+            Brand Color
+            <input id="brand-color" type="color" value="#0f766e" />
+          </label>
+          <label>
+            ABN
+            <input id="business-abn" type="text" placeholder="Business ABN" />
+          </label>
+          <label>
+            Account Name
+            <input id="bank-account-name" type="text" placeholder="Name on bank account" />
+          </label>
+          <label>
+            BSB
+            <input id="bank-bsb" type="text" placeholder="e.g. 013268" />
+          </label>
+          <label>
+            Account Number
+            <input id="bank-account-number" type="text" placeholder="e.g. 648056699" />
+          </label>
         </div>
 
         <hr />
 
         <div class="grid two-col">
           <label>
-            Client Name
-            <input id="client-name" type="text" placeholder="Client full name" />
+            Bill To (Organization)
+            <input id="client-name" type="text" placeholder="e.g. Let's Get Care" />
           </label>
           <label>
-            Client Email
-            <input id="client-email" type="email" placeholder="client@example.com" />
+            Client Details Name
+            <input id="client-details-name" type="text" placeholder="e.g. Mrs Efstathia Sarris" />
           </label>
           <label>
-            Client Phone
-            <input id="client-phone" type="tel" placeholder="(555) 555-5555" />
+            Client ID
+            <input id="client-id" type="text" placeholder="e.g. 0414-660-769" />
           </label>
           <label>
             Client Address
             <input id="client-address" type="text" placeholder="Street, City, Postcode" />
+          </label>
+          <label>
+            Bill To Address
+            <input id="bill-to-address" type="text" placeholder="Organization address" />
+          </label>
+          <label>
+            Client Email (optional)
+            <input id="client-email" type="email" placeholder="client@example.com" />
+          </label>
+          <label>
+            Client Phone (optional)
+            <input id="client-phone" type="tel" placeholder="(555) 555-5555" />
           </label>
         </div>
 
@@ -84,7 +120,7 @@
 
         <div class="items-section">
           <div class="section-head">
-            <h3>Services / Items</h3>
+            <h3>Care Services</h3>
             <button id="add-item-btn" class="btn btn-secondary">+ Add Line Item</button>
           </div>
           <div id="items-container" class="items-container"></div>
@@ -113,7 +149,7 @@
 
         <label>
           Notes for Client
-          <textarea id="notes" rows="4" placeholder="Thank you for your business!"></textarea>
+          <textarea id="notes" rows="4" placeholder="Thank you for trusting our care service."></textarea>
         </label>
 
         <div class="actions">
@@ -140,8 +176,10 @@
 
     <template id="item-row-template">
       <div class="item-row">
-        <input class="item-description" type="text" placeholder="Service description" />
+        <input class="item-description" type="text" placeholder="e.g. Personal care visit (2 hours)" />
+        <input class="item-date" type="date" />
         <input class="item-quantity" type="number" min="1" step="1" value="1" />
+        <input class="item-uom" type="text" placeholder="Hour" />
         <input class="item-price" type="number" min="0" step="0.01" value="0" />
         <button class="btn btn-danger item-remove-btn" type="button">Remove</button>
       </div>

@@ -11,7 +11,16 @@ const fields = {
   businessEmail: document.getElementById("business-email"),
   businessPhone: document.getElementById("business-phone"),
   businessAddress: document.getElementById("business-address"),
+  businessAbn: document.getElementById("business-abn"),
+  bankAccountName: document.getElementById("bank-account-name"),
+  bankBsb: document.getElementById("bank-bsb"),
+  bankAccountNumber: document.getElementById("bank-account-number"),
+  logoUrl: document.getElementById("logo-url"),
+  brandColor: document.getElementById("brand-color"),
   clientName: document.getElementById("client-name"),
+  clientDetailsName: document.getElementById("client-details-name"),
+  clientId: document.getElementById("client-id"),
+  billToAddress: document.getElementById("bill-to-address"),
   clientEmail: document.getElementById("client-email"),
   clientPhone: document.getElementById("client-phone"),
   clientAddress: document.getElementById("client-address"),
@@ -41,15 +50,23 @@ function toNumber(value) {
 }
 
 function formatCurrency(amount, currencyCode) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currencyCode,
-    currencyDisplay: "symbol",
-  }).format(amount);
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode || "USD",
+      currencyDisplay: "symbol",
+    }).format(amount);
+  } catch {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: "USD",
+      currencyDisplay: "symbol",
+    }).format(amount);
+  }
 }
 
 function createEmptyItem() {
-  return { id: crypto.randomUUID(), description: "", quantity: 1, price: 0 };
+  return { id: crypto.randomUUID(), description: "", serviceDate: "", quantity: 1, uom: "Hour", price: 0 };
 }
 
 function defaultDates() {
@@ -77,7 +94,16 @@ function getFormData() {
     businessEmail: fields.businessEmail.value.trim(),
     businessPhone: fields.businessPhone.value.trim(),
     businessAddress: fields.businessAddress.value.trim(),
+    businessAbn: fields.businessAbn.value.trim(),
+    bankAccountName: fields.bankAccountName.value.trim(),
+    bankBsb: fields.bankBsb.value.trim(),
+    bankAccountNumber: fields.bankAccountNumber.value.trim(),
+    logoUrl: fields.logoUrl.value.trim(),
+    brandColor: fields.brandColor.value,
     clientName: fields.clientName.value.trim(),
+    clientDetailsName: fields.clientDetailsName.value.trim(),
+    clientId: fields.clientId.value.trim(),
+    billToAddress: fields.billToAddress.value.trim(),
     clientEmail: fields.clientEmail.value.trim(),
     clientPhone: fields.clientPhone.value.trim(),
     clientAddress: fields.clientAddress.value.trim(),
@@ -89,6 +115,39 @@ function getFormData() {
     currency: fields.currency.value,
     notes: fields.notes.value.trim(),
   };
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function normalizeHexColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : "#0f766e";
+}
+
+function darkenHex(value, percent) {
+  const hex = normalizeHexColor(value).slice(1);
+  const amount = 1 - percent / 100;
+  const r = Math.max(0, Math.floor(parseInt(hex.slice(0, 2), 16) * amount));
+  const g = Math.max(0, Math.floor(parseInt(hex.slice(2, 4), 16) * amount));
+  const b = Math.max(0, Math.floor(parseInt(hex.slice(4, 6), 16) * amount));
+  return `#${[r, g, b].map((part) => part.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function applyBrandColor(color) {
+  const safeColor = normalizeHexColor(color);
+  document.documentElement.style.setProperty("--primary", safeColor);
+  document.documentElement.style.setProperty("--primary-dark", darkenHex(safeColor, 18));
+}
+
+function safeImageUrl(url) {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : "";
 }
 
 function computeTotals(form, items) {
@@ -106,10 +165,12 @@ function renderItems() {
 
   state.items.forEach((item) => {
     const node = itemRowTemplate.content.firstElementChild.cloneNode(true);
-    const [descriptionInput, quantityInput, priceInput, removeBtn] = node.children;
+    const [descriptionInput, dateInput, quantityInput, uomInput, priceInput, removeBtn] = node.children;
 
     descriptionInput.value = item.description;
+    dateInput.value = item.serviceDate || "";
     quantityInput.value = item.quantity;
+    uomInput.value = item.uom || "Hour";
     priceInput.value = item.price;
 
     descriptionInput.addEventListener("input", (event) => {
@@ -117,8 +178,18 @@ function renderItems() {
       renderPreview();
     });
 
+    dateInput.addEventListener("input", (event) => {
+      item.serviceDate = event.target.value;
+      renderPreview();
+    });
+
     quantityInput.addEventListener("input", (event) => {
       item.quantity = Math.max(1, toNumber(event.target.value));
+      renderPreview();
+    });
+
+    uomInput.addEventListener("input", (event) => {
+      item.uom = event.target.value || "Hour";
       renderPreview();
     });
 
@@ -138,68 +209,103 @@ function renderItems() {
   });
 }
 
+function formatShortDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
+
 function renderPreview() {
   const form = getFormData();
   const totals = computeTotals(form, state.items);
+  applyBrandColor(form.brandColor);
+
+  const logoMarkup = safeImageUrl(form.logoUrl)
+    ? `<img class="preview-logo" src="${escapeHtml(form.logoUrl)}" alt="Business logo" />`
+    : "";
 
   const itemsRows = state.items
     .map((item) => {
       const lineTotal = item.quantity * item.price;
       return `<tr>
-        <td>${item.description || "(No description)"}</td>
+        <td>${escapeHtml(item.description || "(No description)")}</td>
+        <td>${escapeHtml(formatShortDate(item.serviceDate))}</td>
         <td>${item.quantity}</td>
+        <td>${escapeHtml(item.uom || "Hour")}</td>
         <td>${formatCurrency(item.price, form.currency)}</td>
+        <td>${formatCurrency(lineTotal, form.currency)}</td>
         <td>${formatCurrency(lineTotal, form.currency)}</td>
       </tr>`;
     })
     .join("");
 
+  previewEl.classList.add("invoice-template");
+
   previewEl.innerHTML = `
-    <div class="preview-head">
-      <div>
-        <h3>${form.businessName || "Your Business"}</h3>
-        <p>${form.businessEmail || ""}</p>
-        <p>${form.businessPhone || ""}</p>
-        <p>${form.businessAddress || ""}</p>
+    <div class="template-header">
+      <div class="preview-business">
+        ${logoMarkup}
+        <div>
+          <p><strong>Accounts Name:</strong> ${escapeHtml(form.businessName || "Your Business")}</p>
+          <p>${escapeHtml(form.businessAddress || "")}</p>
+          <p><strong>Mobile:</strong> ${escapeHtml(form.businessPhone || "")}</p>
+          <p>Email: ${escapeHtml(form.businessEmail || "")}</p>
+          <p><strong>ABN:</strong> ${escapeHtml(form.businessAbn || "-")}</p>
+        </div>
       </div>
-      <div>
-        <h3>Invoice</h3>
-        <p><strong>#:</strong> ${form.invoiceNumber || "-"}</p>
-        <p><strong>Date:</strong> ${form.invoiceDate || "-"}</p>
-        <p><strong>Due:</strong> ${form.dueDate || "-"}</p>
-      </div>
-    </div>
-
-    <hr />
-
-    <div class="preview-parties">
-      <div>
-        <p><strong>Bill To:</strong></p>
-        <p>${form.clientName || "Client Name"}</p>
-        <p>${form.clientEmail || ""}</p>
-        <p>${form.clientPhone || ""}</p>
-        <p>${form.clientAddress || ""}</p>
+      <div class="template-invoice-meta">
+        <p><strong>Tax Invoice Number:</strong> ${escapeHtml(form.invoiceNumber || "-")}</p>
+        <p><strong>Invoice Date:</strong> ${escapeHtml(formatShortDate(form.invoiceDate))}</p>
+        <p><strong>Due Date:</strong> ${escapeHtml(formatShortDate(form.dueDate))}</p>
       </div>
     </div>
 
-    <table class="preview-table">
+    <div class="template-blocks">
+      <div class="template-block">
+        <p><strong>Bill to: ${escapeHtml(form.clientName || "-")}</strong></p>
+        <p>${escapeHtml(form.billToAddress || form.clientAddress || "")}</p>
+      </div>
+      <div class="template-block">
+        <p><strong>Client Details: ${escapeHtml(form.clientDetailsName || form.clientName || "-")}</strong></p>
+        <p>${escapeHtml(form.clientAddress || "")}</p>
+        <p><strong>Client I.D:</strong> ${escapeHtml(form.clientId || "-")}</p>
+      </div>
+    </div>
+
+    <table class="preview-table template-table">
       <thead>
         <tr>
-          <th>Description</th>
+          <th>Services</th>
+          <th>Date</th>
           <th>Qty</th>
-          <th>Price</th>
+          <th>UOM</th>
+          <th>Unit Price</th>
+          <th>Net Amount</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>${itemsRows}</tbody>
     </table>
 
-    <div class="preview-total-line"><span>Subtotal</span><span>${formatCurrency(totals.subtotal, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Discount</span><span>-${formatCurrency(totals.discount, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Tax</span><span>${formatCurrency(totals.tax, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Amount Due</span><span>${formatCurrency(totals.total, form.currency)}</span></div>
+    <div class="template-rule"></div>
+    <p class="template-total"><strong>Total:</strong> ${formatCurrency(totals.total, form.currency)}</p>
 
-    ${form.notes ? `<hr /><p><strong>Notes:</strong> ${form.notes}</p>` : ""}
+    <p class="template-note"><strong>*Care Services:</strong> ${escapeHtml(form.notes || "Assistance with selfcare and activities of daily living")}</p>
+    <div class="template-bank">
+      <p><strong>Bank Details:</strong></p>
+      <p><strong>Account Name:</strong> ${escapeHtml(form.bankAccountName || form.businessName || "-")}</p>
+      <p><strong>BSB:</strong> ${escapeHtml(form.bankBsb || "-")}</p>
+      <p><strong>Account Number:</strong> ${escapeHtml(form.bankAccountNumber || "-")}</p>
+    </div>
+
+    <div class="template-contact">
+      ${form.clientEmail ? `<p>Client Email: ${escapeHtml(form.clientEmail)}</p>` : ""}
+      ${form.clientPhone ? `<p>Client Phone: ${escapeHtml(form.clientPhone)}</p>` : ""}
+    </div>
   `;
 }
 
@@ -209,7 +315,16 @@ function resetForm() {
   fields.businessEmail.value = "";
   fields.businessPhone.value = "";
   fields.businessAddress.value = "";
+  fields.businessAbn.value = "";
+  fields.bankAccountName.value = "";
+  fields.bankBsb.value = "";
+  fields.bankAccountNumber.value = "";
+  fields.logoUrl.value = "";
+  fields.brandColor.value = "#0f766e";
   fields.clientName.value = "";
+  fields.clientDetailsName.value = "";
+  fields.clientId.value = "";
+  fields.billToAddress.value = "";
   fields.clientEmail.value = "";
   fields.clientPhone.value = "";
   fields.clientAddress.value = "";
@@ -218,8 +333,9 @@ function resetForm() {
   fields.dueDate.value = dates.dueDate;
   fields.taxRate.value = "0";
   fields.discountRate.value = "0";
-  fields.currency.value = "USD";
-  fields.notes.value = "Thank you for your business.";
+  fields.currency.value = "AUD";
+  fields.notes.value =
+    "Assistance with selfcare and activities of daily living";
 
   state.selectedInvoiceId = null;
   state.items = [createEmptyItem()];
