@@ -13,6 +13,7 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 ### Changed
 - Invoice preview now sanitizes user-entered text before rendering.
 - Currency formatting now falls back safely if a saved invoice has invalid currency data.
+- Updated form wording and sample data for elderly care service use cases.
 
 ## [0.1.0] - 2026-03-04
 ### Added

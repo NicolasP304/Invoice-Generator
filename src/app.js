@@ -275,7 +275,8 @@ function resetForm() {
   fields.taxRate.value = "0";
   fields.discountRate.value = "0";
   fields.currency.value = "USD";
-  fields.notes.value = "Thank you for your business.";
+  fields.notes.value =
+    "Thank you for trusting our care service. Please make payment within 14 days.";
 
   state.selectedInvoiceId = null;
   state.items = [createEmptyItem()];
@@ -286,8 +287,8 @@ function resetForm() {
 
 function loadExampleInvoice() {
   const dates = defaultDates();
-  fields.businessName.value = "Mum's Home Services";
-  fields.businessEmail.value = "hello@mumshomeservices.com";
+  fields.businessName.value = "Mum's Elder Care Services";
+  fields.businessEmail.value = "hello@mumseldercare.com";
   fields.businessPhone.value = "(555) 241-9921";
   fields.businessAddress.value = "42 Garden Lane, Springfield";
   fields.logoUrl.value = "";
@@ -302,12 +303,14 @@ function loadExampleInvoice() {
   fields.taxRate.value = "8";
   fields.discountRate.value = "0";
   fields.currency.value = "USD";
-  fields.notes.value = "Thank you for choosing Mum's Home Services. Payment due within 14 days.";
+  fields.notes.value =
+    "Thank you for trusting Mum's Elder Care Services. Payment is due within 14 days.";
 
   state.selectedInvoiceId = null;
   state.items = [
-    { id: crypto.randomUUID(), description: "Deep cleaning service", quantity: 1, price: 150 },
-    { id: crypto.randomUUID(), description: "Window cleaning", quantity: 8, price: 12.5 },
+    { id: crypto.randomUUID(), description: "Daily personal care visit (2 hours)", quantity: 5, price: 45 },
+    { id: crypto.randomUUID(), description: "Medication reminder support", quantity: 5, price: 18 },
+    { id: crypto.randomUUID(), description: "Companionship visit", quantity: 2, price: 35 },
   ];
 
   renderItems();

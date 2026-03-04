@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invoice Generator</title>
+    <title>Care Service Invoice Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,7 +16,7 @@
     <header class="topbar">
       <div>
         <p class="eyebrow">Simple and friendly</p>
-        <h1>Invoice Generator</h1>
+        <h1>Care Service Invoice Generator</h1>
       </div>
       <button id="new-invoice-btn" class="btn btn-secondary">Start New Invoice</button>
     </header>
@@ -28,7 +28,7 @@
         <div class="grid two-col">
           <label>
             Your Business Name
-            <input id="business-name" type="text" placeholder="Example: Mum's Cleaning Service" />
+            <input id="business-name" type="text" placeholder="Example: Mum's Elder Care Services" />
           </label>
           <label>
             Your Email
@@ -92,7 +92,7 @@
 
         <div class="items-section">
           <div class="section-head">
-            <h3>Services / Items</h3>
+            <h3>Care Services</h3>
             <button id="add-item-btn" class="btn btn-secondary">+ Add Line Item</button>
           </div>
           <div id="items-container" class="items-container"></div>
@@ -121,12 +121,12 @@
 
         <label>
           Notes for Client
-          <textarea id="notes" rows="4" placeholder="Thank you for your business!"></textarea>
+          <textarea id="notes" rows="4" placeholder="Thank you for trusting our care service."></textarea>
         </label>
 
         <div class="actions">
           <button id="save-draft-btn" class="btn btn-primary">Save Invoice</button>
-          <button id="load-example-btn" class="btn btn-secondary">Load Example</button>
+          <button id="load-example-btn" class="btn btn-secondary">Load Care Example</button>
           <button id="download-pdf-btn" class="btn btn-secondary">Print / Save as PDF</button>
           <button id="clear-form-btn" class="btn btn-danger">Clear Form</button>
         </div>
@@ -149,7 +149,7 @@
 
     <template id="item-row-template">
       <div class="item-row">
-        <input class="item-description" type="text" placeholder="Service description" />
+        <input class="item-description" type="text" placeholder="e.g. Personal care visit (2 hours)" />
         <input class="item-quantity" type="number" min="1" step="1" value="1" />
         <input class="item-price" type="number" min="0" step="0.01" value="0" />
         <button class="btn btn-danger item-remove-btn" type="button">Remove</button>
