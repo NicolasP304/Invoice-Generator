@@ -36,7 +36,6 @@ const saveDraftBtn = document.getElementById("save-draft-btn");
 const clearFormBtn = document.getElementById("clear-form-btn");
 const newInvoiceBtn = document.getElementById("new-invoice-btn");
 const downloadPdfBtn = document.getElementById("download-pdf-btn");
-const loadExampleBtn = document.getElementById("load-example-btn");
 
 function toNumber(value) {
   const num = Number(value);
@@ -470,7 +469,6 @@ function wireListeners() {
   });
 
   newInvoiceBtn.addEventListener("click", resetForm);
-  loadExampleBtn.addEventListener("click", loadExampleInvoice);
 
   downloadPdfBtn.addEventListener("click", () => {
     window.print();
