@@ -11,9 +11,16 @@ const fields = {
   businessEmail: document.getElementById("business-email"),
   businessPhone: document.getElementById("business-phone"),
   businessAddress: document.getElementById("business-address"),
+  businessAbn: document.getElementById("business-abn"),
+  bankAccountName: document.getElementById("bank-account-name"),
+  bankBsb: document.getElementById("bank-bsb"),
+  bankAccountNumber: document.getElementById("bank-account-number"),
   logoUrl: document.getElementById("logo-url"),
   brandColor: document.getElementById("brand-color"),
   clientName: document.getElementById("client-name"),
+  clientDetailsName: document.getElementById("client-details-name"),
+  clientId: document.getElementById("client-id"),
+  billToAddress: document.getElementById("bill-to-address"),
   clientEmail: document.getElementById("client-email"),
   clientPhone: document.getElementById("client-phone"),
   clientAddress: document.getElementById("client-address"),
@@ -59,7 +66,7 @@ function formatCurrency(amount, currencyCode) {
 }
 
 function createEmptyItem() {
-  return { id: crypto.randomUUID(), description: "", quantity: 1, price: 0 };
+  return { id: crypto.randomUUID(), description: "", serviceDate: "", quantity: 1, uom: "Hour", price: 0 };
 }
 
 function defaultDates() {
@@ -87,9 +94,16 @@ function getFormData() {
     businessEmail: fields.businessEmail.value.trim(),
     businessPhone: fields.businessPhone.value.trim(),
     businessAddress: fields.businessAddress.value.trim(),
+    businessAbn: fields.businessAbn.value.trim(),
+    bankAccountName: fields.bankAccountName.value.trim(),
+    bankBsb: fields.bankBsb.value.trim(),
+    bankAccountNumber: fields.bankAccountNumber.value.trim(),
     logoUrl: fields.logoUrl.value.trim(),
     brandColor: fields.brandColor.value,
     clientName: fields.clientName.value.trim(),
+    clientDetailsName: fields.clientDetailsName.value.trim(),
+    clientId: fields.clientId.value.trim(),
+    billToAddress: fields.billToAddress.value.trim(),
     clientEmail: fields.clientEmail.value.trim(),
     clientPhone: fields.clientPhone.value.trim(),
     clientAddress: fields.clientAddress.value.trim(),
@@ -151,10 +165,12 @@ function renderItems() {
 
   state.items.forEach((item) => {
     const node = itemRowTemplate.content.firstElementChild.cloneNode(true);
-    const [descriptionInput, quantityInput, priceInput, removeBtn] = node.children;
+    const [descriptionInput, dateInput, quantityInput, uomInput, priceInput, removeBtn] = node.children;
 
     descriptionInput.value = item.description;
+    dateInput.value = item.serviceDate || "";
     quantityInput.value = item.quantity;
+    uomInput.value = item.uom || "Hour";
     priceInput.value = item.price;
 
     descriptionInput.addEventListener("input", (event) => {
@@ -162,8 +178,18 @@ function renderItems() {
       renderPreview();
     });
 
+    dateInput.addEventListener("input", (event) => {
+      item.serviceDate = event.target.value;
+      renderPreview();
+    });
+
     quantityInput.addEventListener("input", (event) => {
       item.quantity = Math.max(1, toNumber(event.target.value));
+      renderPreview();
+    });
+
+    uomInput.addEventListener("input", (event) => {
+      item.uom = event.target.value || "Hour";
       renderPreview();
     });
 
@@ -183,6 +209,16 @@ function renderItems() {
   });
 }
 
+function formatShortDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
+
 function renderPreview() {
   const form = getFormData();
   const totals = computeTotals(form, state.items);
@@ -197,62 +233,79 @@ function renderPreview() {
       const lineTotal = item.quantity * item.price;
       return `<tr>
         <td>${escapeHtml(item.description || "(No description)")}</td>
+        <td>${escapeHtml(formatShortDate(item.serviceDate))}</td>
         <td>${item.quantity}</td>
+        <td>${escapeHtml(item.uom || "Hour")}</td>
         <td>${formatCurrency(item.price, form.currency)}</td>
+        <td>${formatCurrency(lineTotal, form.currency)}</td>
         <td>${formatCurrency(lineTotal, form.currency)}</td>
       </tr>`;
     })
     .join("");
 
+  previewEl.classList.add("invoice-template");
+
   previewEl.innerHTML = `
-    <div class="preview-head">
+    <div class="template-header">
       <div class="preview-business">
         ${logoMarkup}
         <div>
-          <h3>${escapeHtml(form.businessName || "Your Business")}</h3>
-          <p>${escapeHtml(form.businessEmail || "")}</p>
-          <p>${escapeHtml(form.businessPhone || "")}</p>
+          <p><strong>Accounts Name:</strong> ${escapeHtml(form.businessName || "Your Business")}</p>
           <p>${escapeHtml(form.businessAddress || "")}</p>
+          <p><strong>Mobile:</strong> ${escapeHtml(form.businessPhone || "")}</p>
+          <p>Email: ${escapeHtml(form.businessEmail || "")}</p>
+          <p><strong>ABN:</strong> ${escapeHtml(form.businessAbn || "-")}</p>
         </div>
       </div>
-      <div>
-        <h3>Invoice</h3>
-        <p><strong>#:</strong> ${escapeHtml(form.invoiceNumber || "-")}</p>
-        <p><strong>Date:</strong> ${escapeHtml(form.invoiceDate || "-")}</p>
-        <p><strong>Due:</strong> ${escapeHtml(form.dueDate || "-")}</p>
+      <div class="template-invoice-meta">
+        <p><strong>Tax Invoice Number:</strong> ${escapeHtml(form.invoiceNumber || "-")}</p>
+        <p><strong>Invoice Date:</strong> ${escapeHtml(formatShortDate(form.invoiceDate))}</p>
+        <p><strong>Due Date:</strong> ${escapeHtml(formatShortDate(form.dueDate))}</p>
       </div>
     </div>
 
-    <hr />
-
-    <div class="preview-parties">
-      <div>
-        <p><strong>Bill To:</strong></p>
-        <p>${escapeHtml(form.clientName || "Client Name")}</p>
-        <p>${escapeHtml(form.clientEmail || "")}</p>
-        <p>${escapeHtml(form.clientPhone || "")}</p>
+    <div class="template-blocks">
+      <div class="template-block">
+        <p><strong>Bill to: ${escapeHtml(form.clientName || "-")}</strong></p>
+        <p>${escapeHtml(form.billToAddress || form.clientAddress || "")}</p>
+      </div>
+      <div class="template-block">
+        <p><strong>Client Details: ${escapeHtml(form.clientDetailsName || form.clientName || "-")}</strong></p>
         <p>${escapeHtml(form.clientAddress || "")}</p>
+        <p><strong>Client I.D:</strong> ${escapeHtml(form.clientId || "-")}</p>
       </div>
     </div>
 
-    <table class="preview-table">
+    <table class="preview-table template-table">
       <thead>
         <tr>
-          <th>Description</th>
+          <th>Services</th>
+          <th>Date</th>
           <th>Qty</th>
-          <th>Price</th>
+          <th>UOM</th>
+          <th>Unit Price</th>
+          <th>Net Amount</th>
           <th>Total</th>
         </tr>
       </thead>
       <tbody>${itemsRows}</tbody>
     </table>
 
-    <div class="preview-total-line"><span>Subtotal</span><span>${formatCurrency(totals.subtotal, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Discount</span><span>-${formatCurrency(totals.discount, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Tax</span><span>${formatCurrency(totals.tax, form.currency)}</span></div>
-    <div class="preview-total-line"><span>Amount Due</span><span>${formatCurrency(totals.total, form.currency)}</span></div>
+    <div class="template-rule"></div>
+    <p class="template-total"><strong>Total:</strong> ${formatCurrency(totals.total, form.currency)}</p>
 
-    ${form.notes ? `<hr /><p><strong>Notes:</strong> ${escapeHtml(form.notes)}</p>` : ""}
+    <p class="template-note"><strong>*Care Services:</strong> ${escapeHtml(form.notes || "Assistance with selfcare and activities of daily living")}</p>
+    <div class="template-bank">
+      <p><strong>Bank Details:</strong></p>
+      <p><strong>Account Name:</strong> ${escapeHtml(form.bankAccountName || form.businessName || "-")}</p>
+      <p><strong>BSB:</strong> ${escapeHtml(form.bankBsb || "-")}</p>
+      <p><strong>Account Number:</strong> ${escapeHtml(form.bankAccountNumber || "-")}</p>
+    </div>
+
+    <div class="template-contact">
+      ${form.clientEmail ? `<p>Client Email: ${escapeHtml(form.clientEmail)}</p>` : ""}
+      ${form.clientPhone ? `<p>Client Phone: ${escapeHtml(form.clientPhone)}</p>` : ""}
+    </div>
   `;
 }
 
@@ -262,9 +315,16 @@ function resetForm() {
   fields.businessEmail.value = "";
   fields.businessPhone.value = "";
   fields.businessAddress.value = "";
+  fields.businessAbn.value = "";
+  fields.bankAccountName.value = "";
+  fields.bankBsb.value = "";
+  fields.bankAccountNumber.value = "";
   fields.logoUrl.value = "";
   fields.brandColor.value = "#0f766e";
   fields.clientName.value = "";
+  fields.clientDetailsName.value = "";
+  fields.clientId.value = "";
+  fields.billToAddress.value = "";
   fields.clientEmail.value = "";
   fields.clientPhone.value = "";
   fields.clientAddress.value = "";
@@ -273,44 +333,12 @@ function resetForm() {
   fields.dueDate.value = dates.dueDate;
   fields.taxRate.value = "0";
   fields.discountRate.value = "0";
-  fields.currency.value = "USD";
+  fields.currency.value = "AUD";
   fields.notes.value =
-    "Thank you for trusting our care service. Please make payment within 14 days.";
+    "Assistance with selfcare and activities of daily living";
 
   state.selectedInvoiceId = null;
   state.items = [createEmptyItem()];
-
-  renderItems();
-  renderPreview();
-}
-
-function loadExampleInvoice() {
-  const dates = defaultDates();
-  fields.businessName.value = "Mum's Elder Care Services";
-  fields.businessEmail.value = "hello@mumseldercare.com";
-  fields.businessPhone.value = "(555) 241-9921";
-  fields.businessAddress.value = "42 Garden Lane, Springfield";
-  fields.logoUrl.value = "";
-  fields.brandColor.value = "#0d9488";
-  fields.clientName.value = "Jane Cooper";
-  fields.clientEmail.value = "jane.cooper@example.com";
-  fields.clientPhone.value = "(555) 873-1190";
-  fields.clientAddress.value = "18 Meadow Street, Springfield";
-  fields.invoiceNumber.value = nextInvoiceNumber();
-  fields.invoiceDate.value = dates.invoiceDate;
-  fields.dueDate.value = dates.dueDate;
-  fields.taxRate.value = "8";
-  fields.discountRate.value = "0";
-  fields.currency.value = "USD";
-  fields.notes.value =
-    "Thank you for trusting Mum's Elder Care Services. Payment is due within 14 days.";
-
-  state.selectedInvoiceId = null;
-  state.items = [
-    { id: crypto.randomUUID(), description: "Daily personal care visit (2 hours)", quantity: 5, price: 45 },
-    { id: crypto.randomUUID(), description: "Medication reminder support", quantity: 5, price: 18 },
-    { id: crypto.randomUUID(), description: "Companionship visit", quantity: 2, price: 35 },
-  ];
 
   renderItems();
   renderPreview();

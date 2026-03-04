@@ -14,6 +14,7 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 - Invoice preview now sanitizes user-entered text before rendering.
 - Currency formatting now falls back safely if a saved invoice has invalid currency data.
 - Updated form wording and sample data for elderly care service use cases.
+- Added an aged-care specific invoice template layout with ABN, bank details, client ID, and dated service rows.
 
 ## [0.1.0] - 2026-03-04
 ### Added
