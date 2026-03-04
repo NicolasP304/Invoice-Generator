@@ -23,6 +23,7 @@ body {
   color: var(--text);
   background: var(--bg);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 h1,
@@ -65,6 +66,10 @@ h2 {
   display: grid;
   grid-template-columns: 1.45fr 1fr;
   gap: 0.8rem;
+}
+
+.layout > * {
+  min-width: 0;
 }
 
 .card {
@@ -170,6 +175,10 @@ hr {
   align-items: center;
 }
 
+.item-row > * {
+  min-width: 0;
+}
+
 .btn {
   border: none;
   border-radius: 14px;
@@ -250,10 +259,11 @@ hr {
   justify-content: space-between;
   gap: 1rem;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .template-invoice-meta {
-  min-width: 260px;
+  min-width: 0;
   font-size: 0.9rem;
 }
 
@@ -280,6 +290,7 @@ hr {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  table-layout: fixed;
 }
 
 .preview-table th,
@@ -288,6 +299,7 @@ hr {
   border-bottom: none;
   padding: 0.4rem 0.3rem;
   font-size: 0.86rem;
+  overflow-wrap: anywhere;
 }
 
 .template-table thead th {
@@ -366,6 +378,12 @@ hr {
 @media (max-width: 1080px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1280px) {
+  .item-row {
+    grid-template-columns: 1.7fr 1fr 0.8fr 0.8fr 1fr auto;
   }
 }
 
