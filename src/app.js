@@ -11,6 +11,8 @@ const fields = {
   businessEmail: document.getElementById("business-email"),
   businessPhone: document.getElementById("business-phone"),
   businessAddress: document.getElementById("business-address"),
+  logoUrl: document.getElementById("logo-url"),
+  brandColor: document.getElementById("brand-color"),
   clientName: document.getElementById("client-name"),
   clientEmail: document.getElementById("client-email"),
   clientPhone: document.getElementById("client-phone"),
@@ -34,6 +36,7 @@ const saveDraftBtn = document.getElementById("save-draft-btn");
 const clearFormBtn = document.getElementById("clear-form-btn");
 const newInvoiceBtn = document.getElementById("new-invoice-btn");
 const downloadPdfBtn = document.getElementById("download-pdf-btn");
+const loadExampleBtn = document.getElementById("load-example-btn");
 
 function toNumber(value) {
   const num = Number(value);
@@ -41,11 +44,19 @@ function toNumber(value) {
 }
 
 function formatCurrency(amount, currencyCode) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currencyCode,
-    currencyDisplay: "symbol",
-  }).format(amount);
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode || "USD",
+      currencyDisplay: "symbol",
+    }).format(amount);
+  } catch {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: "USD",
+      currencyDisplay: "symbol",
+    }).format(amount);
+  }
 }
 
 function createEmptyItem() {
@@ -77,6 +88,8 @@ function getFormData() {
     businessEmail: fields.businessEmail.value.trim(),
     businessPhone: fields.businessPhone.value.trim(),
     businessAddress: fields.businessAddress.value.trim(),
+    logoUrl: fields.logoUrl.value.trim(),
+    brandColor: fields.brandColor.value,
     clientName: fields.clientName.value.trim(),
     clientEmail: fields.clientEmail.value.trim(),
     clientPhone: fields.clientPhone.value.trim(),
@@ -89,6 +102,39 @@ function getFormData() {
     currency: fields.currency.value,
     notes: fields.notes.value.trim(),
   };
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function normalizeHexColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : "#0f766e";
+}
+
+function darkenHex(value, percent) {
+  const hex = normalizeHexColor(value).slice(1);
+  const amount = 1 - percent / 100;
+  const r = Math.max(0, Math.floor(parseInt(hex.slice(0, 2), 16) * amount));
+  const g = Math.max(0, Math.floor(parseInt(hex.slice(2, 4), 16) * amount));
+  const b = Math.max(0, Math.floor(parseInt(hex.slice(4, 6), 16) * amount));
+  return `#${[r, g, b].map((part) => part.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function applyBrandColor(color) {
+  const safeColor = normalizeHexColor(color);
+  document.documentElement.style.setProperty("--primary", safeColor);
+  document.documentElement.style.setProperty("--primary-dark", darkenHex(safeColor, 18));
+}
+
+function safeImageUrl(url) {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : "";
 }
 
 function computeTotals(form, items) {
@@ -141,12 +187,17 @@ function renderItems() {
 function renderPreview() {
   const form = getFormData();
   const totals = computeTotals(form, state.items);
+  applyBrandColor(form.brandColor);
+
+  const logoMarkup = safeImageUrl(form.logoUrl)
+    ? `<img class="preview-logo" src="${escapeHtml(form.logoUrl)}" alt="Business logo" />`
+    : "";
 
   const itemsRows = state.items
     .map((item) => {
       const lineTotal = item.quantity * item.price;
       return `<tr>
-        <td>${item.description || "(No description)"}</td>
+        <td>${escapeHtml(item.description || "(No description)")}</td>
         <td>${item.quantity}</td>
         <td>${formatCurrency(item.price, form.currency)}</td>
         <td>${formatCurrency(lineTotal, form.currency)}</td>
@@ -156,17 +207,20 @@ function renderPreview() {
 
   previewEl.innerHTML = `
     <div class="preview-head">
-      <div>
-        <h3>${form.businessName || "Your Business"}</h3>
-        <p>${form.businessEmail || ""}</p>
-        <p>${form.businessPhone || ""}</p>
-        <p>${form.businessAddress || ""}</p>
+      <div class="preview-business">
+        ${logoMarkup}
+        <div>
+          <h3>${escapeHtml(form.businessName || "Your Business")}</h3>
+          <p>${escapeHtml(form.businessEmail || "")}</p>
+          <p>${escapeHtml(form.businessPhone || "")}</p>
+          <p>${escapeHtml(form.businessAddress || "")}</p>
+        </div>
       </div>
       <div>
         <h3>Invoice</h3>
-        <p><strong>#:</strong> ${form.invoiceNumber || "-"}</p>
-        <p><strong>Date:</strong> ${form.invoiceDate || "-"}</p>
-        <p><strong>Due:</strong> ${form.dueDate || "-"}</p>
+        <p><strong>#:</strong> ${escapeHtml(form.invoiceNumber || "-")}</p>
+        <p><strong>Date:</strong> ${escapeHtml(form.invoiceDate || "-")}</p>
+        <p><strong>Due:</strong> ${escapeHtml(form.dueDate || "-")}</p>
       </div>
     </div>
 
@@ -175,10 +229,10 @@ function renderPreview() {
     <div class="preview-parties">
       <div>
         <p><strong>Bill To:</strong></p>
-        <p>${form.clientName || "Client Name"}</p>
-        <p>${form.clientEmail || ""}</p>
-        <p>${form.clientPhone || ""}</p>
-        <p>${form.clientAddress || ""}</p>
+        <p>${escapeHtml(form.clientName || "Client Name")}</p>
+        <p>${escapeHtml(form.clientEmail || "")}</p>
+        <p>${escapeHtml(form.clientPhone || "")}</p>
+        <p>${escapeHtml(form.clientAddress || "")}</p>
       </div>
     </div>
 
@@ -199,7 +253,7 @@ function renderPreview() {
     <div class="preview-total-line"><span>Tax</span><span>${formatCurrency(totals.tax, form.currency)}</span></div>
     <div class="preview-total-line"><span>Amount Due</span><span>${formatCurrency(totals.total, form.currency)}</span></div>
 
-    ${form.notes ? `<hr /><p><strong>Notes:</strong> ${form.notes}</p>` : ""}
+    ${form.notes ? `<hr /><p><strong>Notes:</strong> ${escapeHtml(form.notes)}</p>` : ""}
   `;
 }
 
@@ -209,6 +263,8 @@ function resetForm() {
   fields.businessEmail.value = "";
   fields.businessPhone.value = "";
   fields.businessAddress.value = "";
+  fields.logoUrl.value = "";
+  fields.brandColor.value = "#0f766e";
   fields.clientName.value = "";
   fields.clientEmail.value = "";
   fields.clientPhone.value = "";
@@ -223,6 +279,36 @@ function resetForm() {
 
   state.selectedInvoiceId = null;
   state.items = [createEmptyItem()];
+
+  renderItems();
+  renderPreview();
+}
+
+function loadExampleInvoice() {
+  const dates = defaultDates();
+  fields.businessName.value = "Mum's Home Services";
+  fields.businessEmail.value = "hello@mumshomeservices.com";
+  fields.businessPhone.value = "(555) 241-9921";
+  fields.businessAddress.value = "42 Garden Lane, Springfield";
+  fields.logoUrl.value = "";
+  fields.brandColor.value = "#0d9488";
+  fields.clientName.value = "Jane Cooper";
+  fields.clientEmail.value = "jane.cooper@example.com";
+  fields.clientPhone.value = "(555) 873-1190";
+  fields.clientAddress.value = "18 Meadow Street, Springfield";
+  fields.invoiceNumber.value = nextInvoiceNumber();
+  fields.invoiceDate.value = dates.invoiceDate;
+  fields.dueDate.value = dates.dueDate;
+  fields.taxRate.value = "8";
+  fields.discountRate.value = "0";
+  fields.currency.value = "USD";
+  fields.notes.value = "Thank you for choosing Mum's Home Services. Payment due within 14 days.";
+
+  state.selectedInvoiceId = null;
+  state.items = [
+    { id: crypto.randomUUID(), description: "Deep cleaning service", quantity: 1, price: 150 },
+    { id: crypto.randomUUID(), description: "Window cleaning", quantity: 8, price: 12.5 },
+  ];
 
   renderItems();
   renderPreview();
@@ -381,6 +467,7 @@ function wireListeners() {
   });
 
   newInvoiceBtn.addEventListener("click", resetForm);
+  loadExampleBtn.addEventListener("click", loadExampleInvoice);
 
   downloadPdfBtn.addEventListener("click", () => {
     window.print();

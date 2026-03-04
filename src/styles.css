@@ -117,6 +117,11 @@ textarea {
   background: var(--surface-alt);
 }
 
+input[type="color"] {
+  padding: 0.3rem;
+  min-height: 44px;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -214,6 +219,21 @@ hr {
   display: flex;
   justify-content: space-between;
   gap: 0.7rem;
+}
+
+.preview-business {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.preview-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
 }
 
 .preview-total-line {
