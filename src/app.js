@@ -50,16 +50,17 @@ function toNumber(value) {
 }
 
 function formatCurrency(amount, currencyCode) {
+  const locale = "en-AU";
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: currencyCode || "USD",
+      currency: currencyCode || "AUD",
       currencyDisplay: "symbol",
     }).format(amount);
   } catch {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
-      currency: "USD",
+      currency: "AUD",
       currencyDisplay: "symbol",
     }).format(amount);
   }
@@ -314,7 +315,7 @@ function resetForm() {
   const dates = defaultDates();
   fields.businessName.value = "";
   fields.businessEmail.value = "";
-  fields.businessPhone.value = "";
+  fields.businessPhone.value = "+61 ";
   fields.businessAddress.value = "";
   fields.businessAbn.value = "";
   fields.bankAccountName.value = "";
@@ -327,7 +328,7 @@ function resetForm() {
   fields.clientId.value = "";
   fields.billToAddress.value = "";
   fields.clientEmail.value = "";
-  fields.clientPhone.value = "";
+  fields.clientPhone.value = "+61 ";
   fields.clientAddress.value = "";
   fields.invoiceNumber.value = nextInvoiceNumber();
   fields.invoiceDate.value = dates.invoiceDate;
