@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Simple and friendly</p>
+        <h1>Invoice Generator</h1>
+      </div>
+      <button id="new-invoice-btn" class="btn btn-secondary">Start New Invoice</button>
+    </header>
+
+    <main class="layout">
+      <section class="card form-card" aria-label="Invoice details form">
+        <h2>Invoice Details</h2>
+
+        <div class="grid two-col">
+          <label>
+            Your Business Name
+            <input id="business-name" type="text" placeholder="Example: Mum's Cleaning Service" />
+          </label>
+          <label>
+            Your Email
+            <input id="business-email" type="email" placeholder="name@example.com" />
+          </label>
+          <label>
+            Your Phone
+            <input id="business-phone" type="tel" placeholder="(555) 123-4567" />
+          </label>
+          <label>
+            Your Address
+            <input id="business-address" type="text" placeholder="Street, City, Postcode" />
+          </label>
+        </div>
+
+        <hr />
+
+        <div class="grid two-col">
+          <label>
+            Client Name
+            <input id="client-name" type="text" placeholder="Client full name" />
+          </label>
+          <label>
+            Client Email
+            <input id="client-email" type="email" placeholder="client@example.com" />
+          </label>
+          <label>
+            Client Phone
+            <input id="client-phone" type="tel" placeholder="(555) 555-5555" />
+          </label>
+          <label>
+            Client Address
+            <input id="client-address" type="text" placeholder="Street, City, Postcode" />
+          </label>
+        </div>
+
+        <hr />
+
+        <div class="grid three-col">
+          <label>
+            Invoice Number
+            <input id="invoice-number" type="text" />
+          </label>
+          <label>
+            Invoice Date
+            <input id="invoice-date" type="date" />
+          </label>
+          <label>
+            Due Date
+            <input id="due-date" type="date" />
+          </label>
+        </div>
+
+        <div class="items-section">
+          <div class="section-head">
+            <h3>Services / Items</h3>
+            <button id="add-item-btn" class="btn btn-secondary">+ Add Line Item</button>
+          </div>
+          <div id="items-container" class="items-container"></div>
+        </div>
+
+        <div class="grid three-col">
+          <label>
+            Tax (%)
+            <input id="tax-rate" type="number" min="0" step="0.1" value="0" />
+          </label>
+          <label>
+            Discount (%)
+            <input id="discount-rate" type="number" min="0" step="0.1" value="0" />
+          </label>
+          <label>
+            Currency
+            <select id="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CAD">CAD (C$)</option>
+              <option value="AUD">AUD (A$)</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Notes for Client
+          <textarea id="notes" rows="4" placeholder="Thank you for your business!"></textarea>
+        </label>
+
+        <div class="actions">
+          <button id="save-draft-btn" class="btn btn-primary">Save Invoice</button>
+          <button id="download-pdf-btn" class="btn btn-secondary">Print / Save as PDF</button>
+          <button id="clear-form-btn" class="btn btn-danger">Clear Form</button>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card preview-card" aria-label="Invoice preview">
+          <h2>Live Preview</h2>
+          <article id="invoice-preview" class="invoice-preview"></article>
+        </section>
+
+        <section class="card history-card" aria-label="Saved invoices">
+          <div class="section-head">
+            <h2>Saved Invoices</h2>
+          </div>
+          <ul id="history-list" class="history-list"></ul>
+        </section>
+      </aside>
+    </main>
+
+    <template id="item-row-template">
+      <div class="item-row">
+        <input class="item-description" type="text" placeholder="Service description" />
+        <input class="item-quantity" type="number" min="1" step="1" value="1" />
+        <input class="item-price" type="number" min="0" step="0.01" value="0" />
+        <button class="btn btn-danger item-remove-btn" type="button">Remove</button>
+      </div>
+    </template>
+
+    <script src="./src/app.js" defer></script>
+  </body>
+</html>
